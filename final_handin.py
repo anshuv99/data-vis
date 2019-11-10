@@ -17,8 +17,11 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 #     'cb5392c35661370d95f300086accea51/raw/'
 #     '8e0768211f6b747c0db42a9ce9a0937dafcbd8b2/'
 #     'indicators.csv')
+
 df = pd.read_csv('medium.csv')
+
 # Changing unixReviewTime in proper time
+
 df[' unixReviewTime'] = pd.to_datetime(df[' unixReviewTime'],unit='s').dt.date
 # print(type(df[' unixReviewTime']))
 
