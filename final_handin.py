@@ -39,7 +39,6 @@ xaxis_column_name = 'Quantity'
 axis_type = 'Linear'
 yaxis_column_name = ' rating'
 
-
 app.layout = html.Div([
     dcc.Tabs(id="tabs", children=[
         dcc.Tab(label='Correlation', children=[
@@ -90,12 +89,7 @@ app.layout = html.Div([
                       ])
         ]),
         dcc.Tab(label='Trending', children=[
-            html.Div([
-                dcc.Graph(
-                    id='category-with-most-reviews'
-                )
-            ], style={'width': '49%', 'display': 'inline-block',
-                      'padding': '0 20'}),
+
             html.Div([
                 dcc.Graph(
                     id='active-reviewers'
@@ -123,10 +117,20 @@ app.layout = html.Div([
         ]),
         dcc.Tab(label='Product Analysis', children=[
             html.Div([
+                dcc.Dropdown(
+                    id='category-3rd-tab',
+                    options=[{'label': i, 'value': i} for i in
+                             available_categories],
+                    value='All'
+                )
+            ],
+                style={'width': '100%', 'display': 'inline-block'}),
+            html.Div([
                 dcc.Graph(
                     id='product-behaviour'
                 )
-            ], style={'width': '100%', 'display': 'inline-block', 'align': 'center',
+            ], style={'width': '100%', 'display': 'inline-block',
+                      'align': 'center',
                       'padding': '0 20'}),
             html.Div(id='none', children=[], style={'display': 'none'})
         ]),
@@ -248,39 +252,49 @@ def update_x_timeseries(hoverData):
 
 @app.callback(
     dash.dependencies.Output('product-behaviour', 'figure'),
-    [Input('none', 'children')])
-def display_product_analysis(none):
-    AverageRating = df.groupby(productID)[rating].mean()
+    [dash.dependencies.Input('category-3rd-tab', 'value')])
+def display_product_analysis(category):
+    if (category == 'All'):
+        catDf = df
+        metaDff = metaDf
+    else:
+        metaDff = metaDf[metaDf[metaCategory] == category]
+        catDf = pd.merge(df, metaDff, left_on=productID, right_on=metaProductId)
+
+    AverageRating = catDf.groupby(productID)[rating].mean()
     # AverageRating.reset_index(inplace=True)
-    TotalReviews = df.groupby(productID, as_index=False)[rating].count()
+    TotalReviews = catDf.groupby(productID, as_index=False)[rating].count()
+
     dff = pd.merge(AverageRating, TotalReviews, left_on=productID,
                    right_on=productID)
-    finalMerge = pd.merge(dff, metaDf, left_on=productID,
+    finalMerge = pd.merge(dff, metaDff, left_on=productID,
                           right_on=metaProductId)
     # finalMerge.reset_index(inplace=True, col)
     return {
         'data': [go.Parcoords(
-            line=dict(color=finalMerge.iloc[ : , 1 ],
-                   colorscale = [[0,'purple'],[0.5,'lightseagreen'],[1,'gold']]),
+            line=dict(color=finalMerge.iloc[:, 1],
+                      colorscale=[[0, 'purple'], [0.5, 'lightseagreen'],
+                                  [1, 'gold']]),
 
             customdata=finalMerge[productID].unique(),
 
             dimensions=list([
-                dict(range=[finalMerge.iloc[:, 2].min(),
-                            finalMerge.iloc[:, 2].max()],
-                     label='Product Review Count', values=finalMerge.iloc[:, 2]),
-
-                dict(range=[finalMerge.iloc[ : , 1 ].min(),
-                            finalMerge.iloc[ : , 1 ].max()],
-                     label="Average Rating", values=finalMerge.iloc[ : , 1 ]),
-
                 dict(range=[finalMerge['price'].min(),
                             finalMerge['price'].max()],
                      label='Price', values=finalMerge['price']),
+                dict(range=[finalMerge.iloc[:, 2].min(),
+                            finalMerge.iloc[:, 2].max()],
+                     label='Quantity sold',
+                     values=finalMerge.iloc[:, 2]),
+
+                dict(range=[finalMerge.iloc[:, 1].min(),
+                            finalMerge.iloc[:, 1].max()],
+                     label="Average Rating", values=finalMerge.iloc[:, 1]),
+
+
 
 
             ]),
-
 
         )],
 
@@ -289,6 +303,142 @@ def display_product_analysis(none):
             # margin={'l': 40, 'b': 30, 't': 10, 'r': 0},
             height=450,
             hovermode='closest'
+        )
+    }
+
+
+@app.callback(
+    Output('active-reviewers', 'figure'),
+    [Input('none', 'children')]
+)
+def active_reviewers(none):
+    innerDf = df.groupby(reviewerID, as_index=False).count()
+    innerDdf = innerDf.sort_values(by=[productID], ascending=False)
+    return {
+        'data': [go.Scatter(
+            y=innerDdf.iloc[:, 1].head(),
+            x=innerDdf[reviewerID].head(),
+
+            mode='lines+markers',
+            marker={
+                'size': 15,
+                'opacity': 0.5,
+                'line': {'width': 0.5, 'color': 'white'}
+            }
+        )],
+        'layout': go.Layout(
+
+            xaxis={
+                'title': 'Most active reviewers',
+
+            },
+            yaxis={
+                'title': 'Review Count',
+
+            },
+
+        )
+    }
+
+
+@app.callback(
+    Output('trending-items-product', 'figure'),
+    [Input('none', 'children')]
+)
+def trending_product(none):
+    innerDf = df.groupby(productID, as_index=False).count()
+    innerDdf = innerDf.sort_values(by=[rating], ascending=False)
+    return {
+        'data': [go.Scatter(
+            x=innerDdf.iloc[:, 0].head(),
+            y=innerDdf[rating].head(),
+
+            mode='lines+markers',
+            marker={
+                'size': 15,
+                'opacity': 0.5,
+                'line': {'width': 0.5, 'color': 'white'}
+            }
+        )],
+        'layout': go.Layout(
+
+            xaxis={
+                'title': 'Most trending product',
+
+            },
+            yaxis={
+                'title': 'Quantity Sold',
+
+            },
+
+        )
+    }
+
+
+@app.callback(
+    Output('customer-low-ratings', 'figure'),
+    [Input('none', 'children')]
+)
+def customer_low_ratings(none):
+    innerDf = df.groupby(reviewerID, as_index=False).mean()
+    innerDdf = innerDf.sort_values(by=[rating], ascending=True)
+    return {
+        'data': [go.Scatter(
+            x=innerDdf.iloc[:, 0].head(),
+            y=innerDdf.iloc[:, 1].head(),
+
+            mode='lines+markers',
+            marker={
+                'size': 15,
+                'opacity': 0.5,
+                'line': {'width': 0.5, 'color': 'white'}
+            }
+        )],
+        'layout': go.Layout(
+
+            xaxis={
+                'title': 'Customers frequently giving low ratings',
+
+            },
+            yaxis={
+                'title': 'Average rating',
+
+            },
+
+        )
+    }
+
+
+@app.callback(
+    Output('customer-high-ratings', 'figure'),
+    [Input('none', 'children')]
+)
+def customer_low_ratings(none):
+    innerDf = df.groupby(reviewerID, as_index=False).mean()
+    innerDdf = innerDf.sort_values(by=[rating], ascending=False)
+    return {
+        'data': [go.Scatter(
+            x=innerDdf.iloc[:, 0].head(),
+            y=innerDdf.iloc[:, 1].head(),
+
+            mode='lines+markers',
+            marker={
+                'size': 15,
+                'opacity': 0.5,
+                'line': {'width': 0.5, 'color': 'white'}
+            }
+        )],
+        'layout': go.Layout(
+
+            xaxis={
+                'title': 'Customers frequently giving high ratings',
+
+            },
+            yaxis={
+                'title': 'Average rating',
+
+            },
+
         )
     }
 
