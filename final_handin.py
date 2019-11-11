@@ -11,6 +11,10 @@ unixReviewTime = ' unixReviewTime'
 productID = 'asin'
 rating = ' overall'
 reviewerID = ' reviewerID'
+metaProductId = 'Product ID'
+metaDescription = 'Description'
+metaPrice = 'price'
+metaCategory = 'Category'
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 #
@@ -22,12 +26,14 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 df = pd.read_csv('Musical_Instruments_5.csv')
 
+
 # Changing unixReviewTime in proper time
 
 df[unixReviewTime] = pd.to_datetime(df[unixReviewTime],unit='s').dt.date
 
-tableDf = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/gapminder2007.csv')
-
+metaDf = pd.read_csv('Music_Instruments_meta_5.csv')
+available_categories = sorted(metaDf[metaCategory].unique())
+available_categories.insert(0, 'All')
 # print(type(df[' unixReviewTime']))
 
 xaxis_column_name = 'Quantity'
@@ -41,7 +47,16 @@ def make_dash_table(df):
 
     html_row = []
 
-    html_row.append(html.Td(['abc','dwdwde']))
+    html_row.append(html.Td(['abc']))
+    html_row.append(html.Td(['abc']))
+
+    table.append(html.Tr(html_row))
+
+    html_row = []
+
+    html_row.append(html.Td(['abc']))
+    html_row.append(html.Td(['abc']))
+
     table.append(html.Tr(html_row))
     return table
 
@@ -49,15 +64,24 @@ def make_dash_table(df):
 
 app.layout = html.Div([
     html.Div([
-        html.Div([dcc.Upload( id='upload-data', children=html.Button('Upload Data File'))]),
-        html.Div([dcc.Upload(id='upload-metadata', children=html.Button('Upload Metadata File'))]),
+        dcc.Upload( id='upload-data', children=html.Button('Upload Data File')),
+        dcc.Upload(id='upload-metadata', children=html.Button('Upload Metadata File')),
     ]),
+    html.Div([
+            dcc.Dropdown(
+                id='category',
+                options=[{'label': i, 'value': i} for i in available_categories],
+                value='All'
+            )
+        ],
+        style={'width': '100%', 'display': 'inline-block'}),
     html.Div([
         dcc.Graph(
             id='crossfilter-indicator-scatter',
             hoverData={'points': [{'customdata': df[productID][0]}]}
         )
     ], style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
+
     html.Div([
         dcc.Graph(id='x-time-series'),
         dcc.Graph(id='y-time-series'),
@@ -69,7 +93,15 @@ app.layout = html.Div([
         max=df[unixReviewTime].max(),
         value=df[unixReviewTime].max(),
         marks={str(year): str(year) for year in df[unixReviewTime].unique()}
-    ), style={'width': '49%', 'padding': '0px 20px 20px 20px'})
+    ), style={'width': '49%', 'padding': '0px 20px 20px 20px', 'color': 'white'}),
+
+    html.Div([html.H2(["Product Details"]), html.Table([
+        html.Tr([html.Td('Product ID'), html.Td(id='Product ID')]),
+        html.Tr([html.Td('Description'), html.Td(id='Description')]),
+        html.Tr([html.Td('Price'), html.Td(id='Price')]),
+        html.Tr([html.Td('Category'), html.Td(id='Category')]),
+    ]),
+    ])
 ])
 
 
@@ -130,12 +162,16 @@ def create_time_series_quantity(dff, axis_type, title, column):
 
 @app.callback(
     dash.dependencies.Output('crossfilter-indicator-scatter', 'figure'),
-    [dash.dependencies.Input('crossfilter-year--slider', 'value')])
-def update_graph(year):
+    [dash.dependencies.Input('crossfilter-year--slider', 'value'),
+     dash.dependencies.Input('category', 'value')])
+def update_graph(year, category):
     # print(type(pd.to_datetime(df[unixReviewTime]).dt.year))
     # dff = df[pd.to_datetime(df[unixReviewTime]).dt.year <= int(year_value)]
-    dff = df
-    # print(dff[productID].unique())
+    if(category == 'All'):
+        dff = df
+    else:
+        metaDff = metaDf[metaDf[metaCategory] == category]
+        dff = pd.merge(df, metaDff, left_on=productID, right_on=metaProductId)
 
     return {
         'data': [go.Scatter(
@@ -186,6 +222,26 @@ def update_x_timeseries(hoverData):
     dff = df[df[productID] == hoverData['points'][0]['customdata']]
     # dff = dff.groupby(unixReviewTime).count()
     return create_time_series_quantity(dff, axis_type, xaxis_column_name, rating)
+
+# @app.callback(
+#     dash.dependencies.Output('y-time-series', 'figure'),
+#     [dash.dependencies.Input('crossfilter-indicator-scatter', 'hoverData')])
+# def update_x_timeseries(hoverData):
+#
+#     dff = df[df[productID] == hoverData['points'][0]['customdata']]
+#     # dff = dff.groupby(unixReviewTime).count()
+#     return create_time_series_quantity(dff, axis_type, xaxis_column_name, rating)
+
+@app.callback(
+    [Output('Product ID', 'children'),
+     Output('Description', 'children'),
+     Output('Price', 'children'),
+     Output('Category', 'children')],
+    [Input('crossfilter-indicator-scatter', 'hoverData')])
+def callback_a(hoverData):
+    hoverProductId = hoverData['points'][0]['customdata']
+    metaDff = metaDf[metaDf[metaProductId] == hoverProductId]
+    return hoverProductId, metaDff[metaDescription], metaDff[metaPrice], metaDff[metaCategory]
 
 
 
