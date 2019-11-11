@@ -3,11 +3,13 @@ import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
 import plotly.graph_objs as go
+from dash.dependencies import Input, Output
+import dash_table
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+external_stylesheets = ['bWLwgP.css']
 unixReviewTime = ' unixReviewTime'
-productID = 'productID'
-rating = ' rating'
+productID = 'asin'
+rating = ' overall'
 reviewerID = ' reviewerID'
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
@@ -18,11 +20,14 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 #     '8e0768211f6b747c0db42a9ce9a0937dafcbd8b2/'
 #     'indicators.csv')
 
-df = pd.read_csv('medium.csv')
+df = pd.read_csv('Musical_Instruments_5.csv')
 
 # Changing unixReviewTime in proper time
 
-df[' unixReviewTime'] = pd.to_datetime(df[' unixReviewTime'],unit='s').dt.date
+df[unixReviewTime] = pd.to_datetime(df[unixReviewTime],unit='s').dt.date
+
+tableDf = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/gapminder2007.csv')
+
 # print(type(df[' unixReviewTime']))
 
 xaxis_column_name = 'Quantity'
@@ -30,12 +35,24 @@ axis_type='Linear'
 yaxis_column_name = ' rating'
 
 
+def make_dash_table(df):
+    """ Return a dash definition of an HTML table for a Pandas dataframe """
+    table = []
+
+    html_row = []
+
+    html_row.append(html.Td(['abc','dwdwde']))
+    table.append(html.Tr(html_row))
+    return table
+
+
+
 app.layout = html.Div([
 
     html.Div([
         dcc.Graph(
             id='crossfilter-indicator-scatter',
-            hoverData={'points': [{'customdata': df['productID'][0]}]}
+            hoverData={'points': [{'customdata': df[productID][0]}]}
         )
     ], style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
     html.Div([
@@ -45,10 +62,10 @@ app.layout = html.Div([
 
     html.Div(dcc.Slider(
         id='crossfilter-year--slider',
-        min=df[' unixReviewTime'].min(),
-        max=df[' unixReviewTime'].max(),
-        value=df[' unixReviewTime'].max(),
-        marks={str(year): str(year) for year in df[' unixReviewTime'].unique()}
+        min=df[unixReviewTime].min(),
+        max=df[unixReviewTime].max(),
+        value=df[unixReviewTime].max(),
+        marks={str(year): str(year) for year in df[unixReviewTime].unique()}
     ), style={'width': '49%', 'padding': '0px 20px 20px 20px'})
 ])
 
@@ -57,7 +74,7 @@ def create_time_series_quality(dff, axis_type, title, column):
     # print(dff)
     return {
         'data': [go.Scatter(
-            x=sorted(dff[' unixReviewTime'].unique()),
+            x=sorted(dff[unixReviewTime].unique()),
             y=dff.groupby(unixReviewTime)[column].mean(),
             mode='lines+markers'
         )],
@@ -97,11 +114,21 @@ def create_time_series_quantity(dff, axis_type, title, column):
         }
     }
 
+# @app.callback(
+#     Output('datatable-paging-page-count', 'data'),
+#     [Input('datatable-paging-page-count', "page_current")
+#      ])
+# def update_table(page_current):
+#     page_current = 1
+#     page_size = 20
+#     return tableDf.iloc[
+#         page_current*page_size:(page_current+ 1)*page_size
+#     ].to_dict('records')
 
 @app.callback(
     dash.dependencies.Output('crossfilter-indicator-scatter', 'figure'),
     [dash.dependencies.Input('crossfilter-year--slider', 'value')])
-def update_graph(year_value):
+def update_graph(year):
     # print(type(pd.to_datetime(df[unixReviewTime]).dt.year))
     # dff = df[pd.to_datetime(df[unixReviewTime]).dt.year <= int(year_value)]
     dff = df
@@ -158,6 +185,7 @@ def update_x_timeseries(hoverData):
     return create_time_series_quantity(dff, axis_type, xaxis_column_name, rating)
 
 
+
 if __name__ == '__main__':
-    # print(df['productID'][0])
+
     app.run_server(debug=False)
