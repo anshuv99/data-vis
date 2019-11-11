@@ -48,7 +48,10 @@ def make_dash_table(df):
 
 
 app.layout = html.Div([
-
+    html.Div([
+        html.Div([dcc.Upload( id='upload-data', children=html.Button('Upload Data File'))]),
+        html.Div([dcc.Upload(id='upload-metadata', children=html.Button('Upload Metadata File'))]),
+    ]),
     html.Div([
         dcc.Graph(
             id='crossfilter-indicator-scatter',
