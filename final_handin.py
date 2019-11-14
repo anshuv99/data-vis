@@ -24,14 +24,21 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 #     'cb5392c35661370d95f300086accea51/raw/'
 #     '8e0768211f6b747c0db42a9ce9a0937dafcbd8b2/'
 #     'indicators.csv')
-
-df = pd.read_csv(sys.argv[1])
+global df
+if len(sys.argv) == 3:
+    df = pd.read_csv(sys.argv[1])
+else:
+    df = pd.read_csv('Musical_Instruments_5.csv')
 
 # Changing unixReviewTime in proper time
 
 df[unixReviewTime] = pd.to_datetime(df[unixReviewTime], unit='s').dt.date
+global metaDf
 
-metaDf = pd.read_csv(sys.argv[2])
+if(len(sys.argv) == 3):
+    metaDf = pd.read_csv(sys.argv[2])
+else:
+    metaDf = pd.read_csv('Music_Instruments_meta_5.csv')
 available_categories = sorted(metaDf[metaCategory].unique())
 available_categories.insert(0, 'All')
 # print(type(df[' unixReviewTime']))
