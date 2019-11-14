@@ -6,7 +6,6 @@ import dash_html_components as html
 import pandas as pd
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output
-import dash_table
 
 external_stylesheets = ['bWLwgP.css']
 unixReviewTime = ' unixReviewTime'
