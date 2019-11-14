@@ -5,6 +5,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
 import plotly.graph_objs as go
+import dash_daq as daq
 from dash.dependencies import Input, Output
 
 external_stylesheets = ['bWLwgP.css']
@@ -36,7 +37,7 @@ else:
 df[unixReviewTime] = pd.to_datetime(df[unixReviewTime], unit='s').dt.date
 global metaDf
 
-if(len(sys.argv) == 3):
+if (len(sys.argv) == 3):
     metaDf = pd.read_csv(sys.argv[2])
 else:
     metaDf = pd.read_csv('Music_Instruments_meta_5.csv')
@@ -73,8 +74,6 @@ app.layout = html.Div([
                 dcc.Graph(id='y-time-series'),
             ], style={'display': 'inline-block', 'width': '49%'}),
 
-
-
             html.Div([html.H2(["Product Details"]), html.Table([
                 html.Tr([html.Td('Product ID'), html.Td(id='Product ID')]),
                 html.Tr([html.Td('Description'), html.Td(id='Description')]),
@@ -86,27 +85,47 @@ app.layout = html.Div([
         dcc.Tab(label='Trending', children=[
 
             html.Div([
+                daq.NumericInput(
+                    id='numeric-input1',
+                    value=5
+                ),
                 dcc.Graph(
                     id='active-reviewers'
-                )
+                ),
+
             ], style={'width': '49%', 'display': 'inline-block',
-                      'padding': '0 20'}),
+                      'padding': '20 20'}),
             html.Div([
+                daq.NumericInput(
+                    id='numeric-input2',
+                    value=5
+                ),
                 dcc.Graph(
                     id='trending-items-product'
-                )
+                ),
+
             ], style={'width': '49%', 'display': 'inline-block',
                       'padding': '0 20'}),
             html.Div([
+
+                daq.NumericInput(
+                    id='numeric-input3',
+                    value=5
+                ),
                 dcc.Graph(
                     id='customer-low-ratings'
                 )
             ], style={'width': '49%', 'display': 'inline-block',
                       'padding': '0 20'}),
             html.Div([
+                daq.NumericInput(
+                    id='numeric-input4',
+                    value=5
+                ),
                 dcc.Graph(
                     id='customer-high-ratings'
-                )
+                ),
+
             ], style={'width': '49%', 'display': 'inline-block',
                       'padding': '0 20'}),
         ]),
@@ -122,8 +141,10 @@ app.layout = html.Div([
                 style={'width': '100%', 'display': 'inline-block'}),
             html.Div([
                 dcc.Graph(
-                    id='product-behaviour'
-                )
+                    id='product-behaviour',
+                    hoverData={'points': [{'customdata': df[productID][0]}]}
+                ),
+
             ], style={'width': '100%', 'display': 'inline-block',
                       'align': 'center',
                       'padding': '0 20'}),
@@ -280,7 +301,6 @@ def display_product_analysis(category):
 
             customdata=finalMerge[productID].unique(),
 
-
             dimensions=list([
                 dict(range=[finalMerge['price'].min(),
                             finalMerge['price'].max()],
@@ -293,9 +313,6 @@ def display_product_analysis(category):
                 dict(range=[finalMerge.iloc[:, 1].min(),
                             finalMerge.iloc[:, 1].max()],
                      label="Average Rating", values=finalMerge.iloc[:, 1]),
-
-
-
 
             ]),
 
@@ -318,15 +335,15 @@ def display_product_analysis(category):
 
 @app.callback(
     Output('active-reviewers', 'figure'),
-    [Input('none', 'children')]
+    [Input('numeric-input1', 'value')]
 )
-def active_reviewers(none):
+def active_reviewers(input):
     innerDf = df.groupby(reviewerID, as_index=False).count()
     innerDdf = innerDf.sort_values(by=[productID], ascending=False)
     return {
         'data': [go.Scatter(
-            y=innerDdf.iloc[:, 1].head(),
-            x=innerDdf[reviewerID].head(),
+            y=innerDdf.iloc[:, 1].head(input),
+            x=innerDdf[reviewerID].head(input),
 
             mode='lines+markers',
             marker={
@@ -359,15 +376,15 @@ def active_reviewers(none):
 
 @app.callback(
     Output('trending-items-product', 'figure'),
-    [Input('none', 'children')]
+    [Input('numeric-input2', 'value')]
 )
-def trending_product(none):
+def trending_product(input):
     innerDf = df.groupby(productID, as_index=False).count()
     innerDdf = innerDf.sort_values(by=[rating], ascending=False)
     return {
         'data': [go.Scatter(
-            x=innerDdf.iloc[:, 0].head(),
-            y=innerDdf[rating].head(),
+            x=innerDdf.iloc[:, 0].head(input),
+            y=innerDdf[rating].head(input),
 
             mode='lines+markers',
             marker={
@@ -399,15 +416,15 @@ def trending_product(none):
 
 @app.callback(
     Output('customer-low-ratings', 'figure'),
-    [Input('none', 'children')]
+    [Input('numeric-input3', 'value')]
 )
-def customer_low_ratings(none):
+def customer_low_ratings(input):
     innerDf = df.groupby(reviewerID, as_index=False).mean()
     innerDdf = innerDf.sort_values(by=[rating], ascending=True)
     return {
         'data': [go.Scatter(
-            x=innerDdf.iloc[:, 0].head(),
-            y=innerDdf.iloc[:, 1].head(),
+            x=innerDdf.iloc[:, 0].head(input),
+            y=innerDdf.iloc[:, 1].head(input),
 
             mode='lines+markers',
             marker={
@@ -439,15 +456,15 @@ def customer_low_ratings(none):
 
 @app.callback(
     Output('customer-high-ratings', 'figure'),
-    [Input('none', 'children')]
+    [Input('numeric-input4', 'value')]
 )
-def customer_low_ratings(none):
+def customer_low_ratings(input):
     innerDf = df.groupby(reviewerID, as_index=False).mean()
     innerDdf = innerDf.sort_values(by=[rating], ascending=False)
     return {
         'data': [go.Scatter(
-            x=innerDdf.iloc[:, 0].head(),
-            y=innerDdf.iloc[:, 1].head(),
+            x=innerDdf.iloc[:, 0].head(input),
+            y=innerDdf.iloc[:, 1].head(input),
 
             mode='lines+markers',
             marker={
