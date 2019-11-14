@@ -19,6 +19,6 @@ This program take two input filess
 Execute the following commands
 
 * git clone https://github.com/anshuv99/data-vis.git
-* python final_handing.put $path_to_file1 $path_to_file2
+* python final_handing.py $path_to_file1 $path_to_file2
 * Open URL http://127.0.0.1:8050/
 
