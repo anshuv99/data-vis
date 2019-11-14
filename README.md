@@ -25,11 +25,12 @@ If you don't provide these files, it will automatically start with Musical Instr
 
 ### Run locally
 Execute the following commands
-
+```
 * git clone https://github.com/anshuv99/data-vis.git
 * pip install -r requirements.txt
 * python final_handing.py $path_to_file1 $path_to_file2
 * Open URL http://127.0.0.1:8050/
+```
 
 ## Snapshots
 ![Image of Yaktocat](https://github.com/anshuv99/data-vis/blob/master/snaphots/Product_detail_graph.png)
