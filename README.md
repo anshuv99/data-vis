@@ -1,7 +1,13 @@
 # Design Challenge 2
 
 ## Description
-A tool to visualize the complex information from the product information and review information from a site. The application takes product information file and review information file and generates visulization to solve complex tasks for seller and buyer.
+A tool to visualize complex knowledge from the product information and review information. The application takes a product information file and review information file and generates visualization to solve complex tasks for seller and buyer.
+
+## Web Application
+
+URL - https://data-vis-dc2.herokuapp.com/
+
+The application takes input data file at startup time. Since this is a predeployed application, it only shows visualization for the Musical Instruments dataset.
 ## Libraries used
 
 * Python
