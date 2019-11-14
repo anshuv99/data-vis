@@ -22,4 +22,4 @@ Execute the following commands
 * python final_handing.py $path_to_file1 $path_to_file2
 * Open URL http://127.0.0.1:8050/
 
-![Image of Yaktocat](https://github.com/anshuv99/data-vis/blob/master/snaphots/Product_detail_graph.png)
+(https://github.com/anshuv99/data-vis/blob/master/snaphots/Product_detail_graph.png)
