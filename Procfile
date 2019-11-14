@@ -1,1 +1,1 @@
-web: gunicorn final_handin:app
+web: gunicorn final_handin:server
