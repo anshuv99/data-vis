@@ -6,8 +6,11 @@ A tool to visualize complex knowledge from the product information and review in
 ## Web Application
 
 URL - https://data-vis-dc2.herokuapp.com/
+Video URL -  https://youtu.be/lMSLykjIZno
 
 The application takes input data file at startup time. Since this is a predeployed application, it only shows visualization for the Musical Instruments dataset.
+
+
 ## Libraries used
 
 * Python
