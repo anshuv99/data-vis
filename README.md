@@ -12,13 +12,16 @@ A tool to visualize the complex information from the product information and rev
 ## Setup
 
 This program take two input filess
-1) Review details file. We will call it file1
+1) Review details file. We will call it file1.
 2) Product detail file. We will call it file2.
+
+If you don't provide these files, it will automatically start with Musical Instruments dataset.
 
 ### Run locally
 Execute the following commands
 
 * git clone https://github.com/anshuv99/data-vis.git
+* pip install -r requirements.txt
 * python final_handing.py $path_to_file1 $path_to_file2
 * Open URL http://127.0.0.1:8050/
 
