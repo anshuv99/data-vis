@@ -18,6 +18,7 @@ metaPrice = 'price'
 metaCategory = 'Category'
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+server = app.server
 #
 # df = pd.read_csv(
 #     'https://gist.githubusercontent.com/chriddyp/'
