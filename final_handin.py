@@ -52,12 +52,6 @@ app.layout = html.Div([
     dcc.Tabs(id="tabs", children=[
         dcc.Tab(label='Distribution', children=[
             html.Div([
-                dcc.Upload(id='upload-data',
-                           children=html.Button('Upload Data File')),
-                dcc.Upload(id='upload-metadata',
-                           children=html.Button('Upload Metadata File')),
-            ]),
-            html.Div([
                 dcc.Dropdown(
                     id='category',
                     options=[{'label': i, 'value': i} for i in
