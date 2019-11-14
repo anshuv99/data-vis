@@ -4,6 +4,6 @@ dash-html-components==1.0.1
 dash-renderer==1.2.0
 dash-table==4.5.0
 dash-table-experiments==0.6.0
+gunicorn==20.0.0
 pandas==0.25.2
-pipenv==2018.11.26
 plotly==4.2.1
