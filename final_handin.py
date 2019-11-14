@@ -41,7 +41,7 @@ yaxis_column_name = ' rating'
 
 app.layout = html.Div([
     dcc.Tabs(id="tabs", children=[
-        dcc.Tab(label='Correlation', children=[
+        dcc.Tab(label='Distribution', children=[
             html.Div([
                 dcc.Upload(id='upload-data',
                            children=html.Button('Upload Data File')),
@@ -70,15 +70,7 @@ app.layout = html.Div([
                 dcc.Graph(id='y-time-series'),
             ], style={'display': 'inline-block', 'width': '49%'}),
 
-            html.Div(dcc.Slider(
-                id='crossfilter-year--slider',
-                min=df[unixReviewTime].min(),
-                max=df[unixReviewTime].max(),
-                value=df[unixReviewTime].max(),
-                marks={str(year): str(year) for year in
-                       df[unixReviewTime].unique()}
-            ), style={'width': '49%', 'padding': '0px 20px 20px 20px',
-                      'color': 'white'}),
+
 
             html.Div([html.H2(["Product Details"]), html.Table([
                 html.Tr([html.Td('Product ID'), html.Td(id='Product ID')]),
@@ -153,7 +145,7 @@ def create_time_series_quality(dff, axis_type, title, column):
                 'x': 0, 'y': 0.85, 'xanchor': 'left', 'yanchor': 'bottom',
                 'xref': 'paper', 'yref': 'paper', 'showarrow': False,
                 'align': 'left', 'bgcolor': 'rgba(255, 255, 255, 0.5)',
-                'text': title
+                'text': 'Rating distribution of the product across time'
             }],
             'yaxis': {'type': 'linear' if axis_type == 'Linear' else 'log'},
             'xaxis': {'showgrid': False}
@@ -176,7 +168,7 @@ def create_time_series_quantity(dff, axis_type, title, column):
                 'x': 0, 'y': 0.85, 'xanchor': 'left', 'yanchor': 'bottom',
                 'xref': 'paper', 'yref': 'paper', 'showarrow': False,
                 'align': 'left', 'bgcolor': 'rgba(255, 255, 255, 0.5)',
-                'text': title
+                'text': 'Review distribution of the product across time'
             }],
             'yaxis': {'type': 'linear' if axis_type == 'Linear' else 'log'},
             'xaxis': {'showgrid': False}
@@ -186,9 +178,8 @@ def create_time_series_quantity(dff, axis_type, title, column):
 
 @app.callback(
     dash.dependencies.Output('crossfilter-indicator-scatter', 'figure'),
-    [dash.dependencies.Input('crossfilter-year--slider', 'value'),
-     dash.dependencies.Input('category', 'value')])
-def update_graph(year, category):
+    [dash.dependencies.Input('category', 'value')])
+def update_graph(category):
     # print(type(pd.to_datetime(df[unixReviewTime]).dt.year))
     # dff = df[pd.to_datetime(df[unixReviewTime]).dt.year <= int(year_value)]
     if (category == 'All'):
@@ -204,24 +195,32 @@ def update_graph(year, category):
             text=dff[productID].unique(),
             customdata=dff[productID].unique(),
             mode='markers',
+            name='Product Id',
             marker={
                 'size': 15,
                 'opacity': 0.5,
-                'line': {'width': 0.5, 'color': 'white'}
+                'line': {'width': 0.5, 'color': 'white'},
             }
         )],
         'layout': go.Layout(
             xaxis={
-                'title': xaxis_column_name,
+                'title': 'Total no. of reviews',
                 'type': 'linear' if axis_type == 'Linear' else 'log'
             },
             yaxis={
-                'title': yaxis_column_name,
+                'title': 'Average rating of the product',
                 'type': 'linear' if axis_type == 'Linear' else 'log'
             },
-            margin={'l': 40, 'b': 30, 't': 10, 'r': 0},
+            margin={'l': 40, 'b': 40, 't': 30, 'r': 0},
             height=450,
-            hovermode='closest'
+            hovermode='closest',
+            showlegend=False,
+            title="Rating and Review correlation of the products",
+            font=dict(
+                family="Courier New, monospace",
+                size=10,
+                color="#000000"
+            )
         )
     }
 
@@ -278,6 +277,7 @@ def display_product_analysis(category):
 
             customdata=finalMerge[productID].unique(),
 
+
             dimensions=list([
                 dict(range=[finalMerge['price'].min(),
                             finalMerge['price'].max()],
@@ -302,7 +302,13 @@ def display_product_analysis(category):
 
             # margin={'l': 40, 'b': 30, 't': 10, 'r': 0},
             height=450,
-            hovermode='closest'
+            hovermode='closest',
+            title="Correlation among multiple dimensions of a product",
+            font=dict(
+                family="Courier New, monospace",
+                size=20,
+                color="#000000"
+            )
         )
     }
 
@@ -325,17 +331,24 @@ def active_reviewers(none):
                 'opacity': 0.5,
                 'line': {'width': 0.5, 'color': 'white'}
             }
+
         )],
         'layout': go.Layout(
 
             xaxis={
-                'title': 'Most active reviewers',
+                'title': 'Reviewer Id',
 
             },
             yaxis={
                 'title': 'Review Count',
 
             },
+            title="Most active reviewers",
+            font=dict(
+                family="Courier New, monospace",
+                size=10,
+                color="#000000"
+            )
 
         )
     }
@@ -363,13 +376,19 @@ def trending_product(none):
         'layout': go.Layout(
 
             xaxis={
-                'title': 'Most trending product',
+                'title': 'Product Id',
 
             },
             yaxis={
                 'title': 'Quantity Sold',
 
             },
+            title="Most trending product",
+            font=dict(
+                family="Courier New, monospace",
+                size=10,
+                color="#000000"
+            )
 
         )
     }
@@ -397,13 +416,19 @@ def customer_low_ratings(none):
         'layout': go.Layout(
 
             xaxis={
-                'title': 'Customers frequently giving low ratings',
+                'title': 'Customer Id',
 
             },
             yaxis={
                 'title': 'Average rating',
 
             },
+            title="Customers frequently giving low ratings",
+            font=dict(
+                family="Courier New, monospace",
+                size=10,
+                color="#000000"
+            )
 
         )
     }
@@ -431,13 +456,19 @@ def customer_low_ratings(none):
         'layout': go.Layout(
 
             xaxis={
-                'title': 'Customers frequently giving high ratings',
+                'title': 'Customer Id',
 
             },
             yaxis={
                 'title': 'Average rating',
 
             },
+            title="Customers frequently giving high ratings",
+            font=dict(
+                family="Courier New, monospace",
+                size=10,
+                color="#000000"
+            )
 
         )
     }
