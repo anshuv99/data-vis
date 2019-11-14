@@ -4,10 +4,10 @@
 A tool to visualize the complex information from the product information and review information from a site. The application takes product information file and review information file and generates visulization to solve complex tasks for seller and buyer.
 ## Libraries used
 
-*Python
-*Panda
-*Dash
-*Plotly
+* Python
+* Panda
+* Dash
+* Plotly
 
 ## Setup
 
