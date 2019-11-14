@@ -1,3 +1,5 @@
+import sys
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -24,13 +26,13 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 #     '8e0768211f6b747c0db42a9ce9a0937dafcbd8b2/'
 #     'indicators.csv')
 
-df = pd.read_csv('Musical_Instruments_5.csv')
+df = pd.read_csv(sys.argv[1])
 
 # Changing unixReviewTime in proper time
 
 df[unixReviewTime] = pd.to_datetime(df[unixReviewTime], unit='s').dt.date
 
-metaDf = pd.read_csv('Music_Instruments_meta_5.csv')
+metaDf = pd.read_csv(sys.argv[2])
 available_categories = sorted(metaDf[metaCategory].unique())
 available_categories.insert(0, 'All')
 # print(type(df[' unixReviewTime']))
